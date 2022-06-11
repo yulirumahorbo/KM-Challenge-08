@@ -1,29 +1,10 @@
 import React from 'react';
-import {View, Text, StyleSheet, TouchableOpacity, Image} from 'react-native';
+import {
+  View, Text, StyleSheet, TouchableOpacity, Image,
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { moderateScale } from 'react-native-size-matters';
 import colors from '../helpers/colors';
-import {useNavigation} from '@react-navigation/native';
-import {moderateScale} from 'react-native-size-matters';
-
-const PokemonCard = props => {
-  const navigation = useNavigation();
-  return (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() =>
-        navigation.navigate('Pokemon Detail Screen', {url: props.item.url})
-      }>
-      <View style={{flexDirection: 'column'}}>
-        <Image
-          style={styles.iconCard}
-          source={require('../icons/pokeball.png')}
-        />
-        <Text style={[styles.normalText, {textTransform: 'capitalize'}]}>
-          {props.name}
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
-};
 
 const styles = StyleSheet.create({
   card: {
@@ -47,5 +28,25 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
+function PokemonCard({ item }) {
+  const navigation = useNavigation();
+  return (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => navigation.navigate('Pokemon Detail Screen', { url: item.url })}
+    >
+      <View style={{ flexDirection: 'column' }}>
+        <Image
+          style={styles.iconCard}
+          source={require('../icons/pokeball.png')}
+        />
+        <Text style={[styles.normalText, { textTransform: 'capitalize' }]}>
+          {item.name}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
 
 export default PokemonCard;

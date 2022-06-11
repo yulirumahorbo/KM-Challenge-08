@@ -1,58 +1,17 @@
-/* eslint-disable react-hooks/rules-of-hooks */
-import {View, Text, Image, FlatList, StyleSheet} from 'react-native';
-import React, {useState, useEffect} from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
+import React, { useState, useEffect } from 'react';
 import database from '@react-native-firebase/database';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { moderateScale } from 'react-native-size-matters';
 import colors from '../../helpers/colors';
-import {moderateScale} from 'react-native-size-matters';
-import PokemonBagCard from '../../components/PokemonBagCard';
-
-const PokemonBag = props => {
-  const [pokemonBag, setPokemonBag] = useState([]);
-  const [key, setKey] = useState([]);
-
-  useEffect(() => {
-    fetchPokeBagData();
-  }, []);
-
-  const fetchPokeBagData = () => {
-    const reference = database().ref('/pokemonBag');
-    reference.on('value', snapshot => {
-      GetData(snapshot.val());
-      console.log(snapshot);
-    });
-  };
-
-  const GetData = data => {
-    let keyFirebase = [];
-    keyFirebase = Object.keys(data);
-    setKey(keyFirebase);
-    console.log(key);
-    setPokemonBag(data);
-  };
-
-  return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: colors.yellow,
-        paddingVertical: moderateScale(16),
-      }}>
-      <Text style={styles.titleText}>Pokemon Bag Screen</Text>
-      <FlatList
-        data={key}
-        style={{margin: 8}}
-        numColumns={2}
-        showsVerticalScrollIndicator={false}
-        renderItem={({item, index}) => (
-          <PokemonBagCard name={pokemonBag[item].name} item={item} pokemonBag />
-        )}
-      />
-    </SafeAreaView>
-  );
-};
-
-export default PokemonBag;
+import PokemonCard from '../../components/PokemonCard';
 
 const styles = StyleSheet.create({
   titleText: {
@@ -62,3 +21,67 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
+function PokemonBag() {
+  const [pokemonBag, setPokemonBag] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const getAllPokemonData = async () => {
+    try {
+      setLoading(true);
+      await database()
+        .ref('pokemonBag/')
+        .once('value')
+        .then((snapshot) => {
+          const allPokemonData = Object.values(snapshot.val());
+          setPokemonBag(allPokemonData);
+        });
+    } catch (error) {
+      Alert.alert('Error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getAllPokemonData();
+  }, []);
+
+  if (loading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: colors.yellow,
+        }}
+      >
+        <ActivityIndicator color={colors.black} size="large" />
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: colors.yellow,
+        paddingVertical: moderateScale(16),
+      }}
+    >
+      <Text style={styles.titleText}>Pokemon Bag Screen</Text>
+      <FlatList
+        data={pokemonBag}
+        style={{ margin: 8 }}
+        numColumns={2}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item }) => (
+          <PokemonCard name={item.name} item={item} />
+        )}
+      />
+    </SafeAreaView>
+  );
+}
+
+export default PokemonBag;
